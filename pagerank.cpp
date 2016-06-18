@@ -14,8 +14,7 @@ struct Node {
 
 int node_num, link_num;
 
-std::unordered_map<std::string, Node*> set_data
-(std::ifstream &ifs) {  
+std::unordered_map<std::string, Node*> set_data (std::ifstream &ifs) {  
   std::string line, key, link;
   std::unordered_map<std::string, Node*> node_map;
   getline(ifs, line);
