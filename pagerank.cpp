@@ -26,12 +26,12 @@ std::unordered_map<std::string, Node*> set_data(std::ifstream &ifs) {
   
   getline(ifs, line);
   link_num = std::stod(line, nullptr);
-   for (int i = 0; i < link_num; i++) {
-     getline(ifs, key, ' ');
-     getline(ifs, link);
+  for (int i = 0; i < link_num; i++) {
+    getline(ifs, key, ' ');
+    getline(ifs, link);
     node_map[key]->m_link_to.push_back(link);
   }
-   return node_map;
+  return node_map;
 }
 
 std::unordered_map<std::string, Node*> calculate_value
@@ -64,8 +64,8 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < 30; i++) {
     node_map = calculate_value(node_map);  
   }
-   for (auto it = node_map.begin(); it != node_map.end(); ++it) {
-     std::cout << it->first << node_map[it->first]->m_value << std::endl;
-   }
-   return 0;
+  for (auto it = node_map.begin(); it != node_map.end(); ++it) {
+    std::cout << it->first << node_map[it->first]->m_value << std::endl;
+  }
+  return 0;
 }
