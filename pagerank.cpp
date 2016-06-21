@@ -12,20 +12,17 @@ struct Node {
   std::vector<std::string> m_link_to;
 };
 
-int node_num, link_num;
-
-std::unordered_map<std::string, Node*> set_data(std::ifstream &ifs) {  
+std::unordered_map<std::string, Node*> set_data(std::ifstream &ifs) {
   std::string line, key, link;
   std::unordered_map<std::string, Node*> node_map;
   getline(ifs, line);
-  node_num = std::stod(line, nullptr);
+  int node_num = std::stod(line, nullptr);
   for (int i = 0; i < node_num; i++) {
     getline(ifs, line);
     node_map[line] = new Node;
-  }
-  
+  } 
   getline(ifs, line);
-  link_num = std::stod(line, nullptr);
+  int link_num = std::stod(line, nullptr);
   for (int i = 0; i < link_num; i++) {
     getline(ifs, key, ' ');
     getline(ifs, link);
@@ -36,17 +33,16 @@ std::unordered_map<std::string, Node*> set_data(std::ifstream &ifs) {
 
 std::unordered_map<std::string, Node*> calculate_value
 (std::unordered_map<std::string, Node*> node_map) {
-  for (auto it = node_map.begin(); it != node_map.end(); it++) {
+  for (auto map : node_map) {
     double give_value =
-      node_map[it->first]->m_value / node_map[it->first]->m_link_to.size();
-    for (int i = 0; i < (int)node_map[it->first]->m_link_to.size(); i++) {
-      std::string key = node_map[it->first]->m_link_to[i];
-      node_map[key]->m_new_value += give_value;
+      map.second->m_value / map.second->m_link_to.size();
+    for (auto& ref : map.second->m_link_to) {
+      node_map[ref]->m_new_value += give_value;
     }
   }
-  for (auto it = node_map.begin(); it != node_map.end(); it++) {
-    node_map[it->first]->m_value = node_map[it->first]->m_new_value;
-    node_map[it->first]->m_new_value = 0;
+  for (auto map : node_map) {
+    map.second->m_value = map.second->m_new_value;
+    map.second->m_new_value = 0;
   }
   return node_map;
 }
@@ -64,8 +60,8 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < 30; i++) {
     node_map = calculate_value(node_map);  
   }
-  for (auto it = node_map.begin(); it != node_map.end(); ++it) {
-    std::cout << it->first << node_map[it->first]->m_value << std::endl;
+  for (auto map : node_map) {
+    std::cout << map.first << map.second->m_value << std::endl;
   }
   return 0;
 }
