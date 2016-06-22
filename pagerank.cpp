@@ -7,66 +7,90 @@
 #include <vector>
 
 class Site;
-using SiteCollection = std::map<std::string, Site*>;
+
+class SiteCollection {
+public:
+  void addSite(std::string name, SiteCollection* sites);
+  void caluculateScore();
+  Site* getNeighbor(std::string key);
+  void makeSiteCollection(std::ifstream &ifs, SiteCollection* sites);
+  void printScores();
+private:
+  std::map<std::string, Site*> m_sites;
+};
 
 class Site {
 public:
-  explicit Site(SiteCollection *sites) : m_sites(sites) { };
-  void setLinkData(std::string key, std::string link) {
-    m_sites->at(key)->m_link_to.push_back(link);
+  Site(std::string name, SiteCollection* sites):
+    m_name(name), m_sites(sites) { };
+  
+  void storeSiteData(std::string link) {
+    m_link_to.push_back(link);
   }
 
   void passScoreToNeighbor() {
     double average = m_score / m_link_to.size();
-    for (auto &key : m_link_to)
-      m_sites->at(key)->m_new_score += average;
+    for (auto &key : m_link_to) {
+    m_sites->getNeighbor(key)->m_new_score += average;
+    }
   }
-
+  
   void update() {
     m_score = m_new_score;
     m_new_score = 0;
   }
 
   void printScore() {
-    for (auto key : *m_sites) {
-      std::cout << key.first + " " << key.second->m_score << std::endl;
-    }
+    std::cout << m_name + " " << m_score << std::endl;
   }
   
 private:
+  std::string m_name;
   double m_score = 100;
   double m_new_score = 0;
   std::vector<std::string> m_link_to;
   SiteCollection* m_sites;
 };
 
-SiteCollection set_data(std::ifstream &ifs) {
-  SiteCollection sites;
-  std::string line, key, link;
+void SiteCollection::addSite(std::string name, SiteCollection* sites) {
+  m_sites[name] = new Site(name, sites);
+}
+
+void SiteCollection::caluculateScore() {
+  for (auto site : m_sites) {
+    site.second->passScoreToNeighbor();
+  }
+  for (auto site : m_sites) {
+    site.second->update();
+  }
+}
+
+Site* SiteCollection::getNeighbor(std::string key) {
+  return m_sites[key];
+}
+
+void SiteCollection::makeSiteCollection(
+  std::ifstream &ifs, SiteCollection* sites) {
+  std::string line, key,link;
   getline(ifs, line);
   int sites_num = std::stod(line, nullptr);
   for (int i = 0; i < sites_num; i++) {
     getline(ifs, line);
-    sites[line] = new Site(&sites);
+    addSite(line, sites);
   }
   getline(ifs, line);
   int link_num = std::stod(line, nullptr);
   for (int i = 0; i < link_num; i++) {
     getline(ifs, key, ' ');
     getline(ifs, link);
-    sites[key]->setLinkData(key, link);
+    m_sites[key]->storeSiteData(link);
   }
-  return sites;
 }
 
-SiteCollection calculate_value(SiteCollection sites) {
-  for (auto site : sites) {
-    site.second->passScoreToNeighbor();
+void SiteCollection::printScores() {
+  for (auto site : m_sites) {
+    site.second->printScore();
   }
-  for (auto site : sites) {
-    site.second->update();
-  }
-  return sites;
 }
 
 int main(int argc, char *argv[]) {
@@ -78,10 +102,11 @@ int main(int argc, char *argv[]) {
     std::cerr << "error" << std::endl;
     return -1;
   }
-  SiteCollection sites = set_data(ifs);
+  SiteCollection sites;
+  sites.makeSiteCollection(ifs, &sites);
   for (int i = 0; i < 30; i++) {
-    sites = calculate_value(sites);  
+    sites.caluculateScore();  
   }
-  sites.begin()->second->printScore();
+  sites.printScores();
   return 0;
 }
