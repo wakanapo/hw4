@@ -10,10 +10,10 @@ class Site;
 
 class SiteCollection {
 public:
-  void addSite(std::string name, SiteCollection* sites);
+  void addSite(std::string name);
   void caluculateScore();
   Site* getNeighbor(std::string key);
-  void makeSiteCollection(std::ifstream &ifs, SiteCollection* sites);
+  void makeSiteCollection(std::ifstream &ifs);
   void printScores();
 private:
   std::map<std::string, Site*> m_sites;
@@ -52,8 +52,8 @@ private:
   SiteCollection* m_sites;
 };
 
-void SiteCollection::addSite(std::string name, SiteCollection* sites) {
-  m_sites[name] = new Site(name, sites);
+void SiteCollection::addSite(std::string name) {
+  m_sites[name] = new Site(name, this);
 }
 
 void SiteCollection::caluculateScore() {
@@ -70,13 +70,13 @@ Site* SiteCollection::getNeighbor(std::string key) {
 }
 
 void SiteCollection::makeSiteCollection(
-  std::ifstream &ifs, SiteCollection* sites) {
+  std::ifstream &ifs) {
   std::string line, key,link;
   getline(ifs, line);
   int sites_num = std::stod(line, nullptr);
   for (int i = 0; i < sites_num; i++) {
     getline(ifs, line);
-    addSite(line, sites);
+    addSite(line);
   }
   getline(ifs, line);
   int link_num = std::stod(line, nullptr);
@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
   SiteCollection sites;
-  sites.makeSiteCollection(ifs, &sites);
+  sites.makeSiteCollection(ifs);
   for (int i = 0; i < 30; i++) {
     sites.caluculateScore();  
   }
