@@ -6,44 +6,67 @@
 #include <map>
 #include <vector>
 
-struct Node {
-  double m_value = 100;
-  double m_new_value = 0;
+class Site;
+using SiteCollection = std::map<std::string, Site*>;
+
+class Site {
+public:
+  explicit Site(SiteCollection *sites) : m_sites(sites) { };
+  void setLinkData(std::string key, std::string link) {
+    m_sites->at(key)->m_link_to.push_back(link);
+  }
+
+  void passScoreToNeighbor() {
+    double average = m_score / m_link_to.size();
+    for (auto &key : m_link_to)
+      m_sites->at(key)->m_new_score += average;
+  }
+
+  void update() {
+    m_score = m_new_score;
+    m_new_score = 0;
+  }
+
+  void printScore() {
+    for (auto key : *m_sites) {
+      std::cout << key.first + " " << key.second->m_score << std::endl;
+    }
+  }
+  
+private:
+  double m_score = 100;
+  double m_new_score = 0;
   std::vector<std::string> m_link_to;
+  SiteCollection* m_sites;
 };
 
-std::map<std::string, Node*> set_data(std::ifstream &ifs) {
+SiteCollection set_data(std::ifstream &ifs) {
+  SiteCollection sites;
   std::string line, key, link;
-  std::map<std::string, Node*> node_map;
   getline(ifs, line);
-  int node_num = std::stod(line, nullptr);
-  for (int i = 0; i < node_num; i++) {
+  int sites_num = std::stod(line, nullptr);
+  for (int i = 0; i < sites_num; i++) {
     getline(ifs, line);
-    node_map[line] = new Node;
-  } 
+    sites[line] = new Site(&sites);
+  }
   getline(ifs, line);
   int link_num = std::stod(line, nullptr);
   for (int i = 0; i < link_num; i++) {
     getline(ifs, key, ' ');
     getline(ifs, link);
-    node_map[key]->m_link_to.push_back(link);
+    sites[key]->setLinkData(key, link);
   }
-  return node_map;
+  return sites;
 }
 
-std::map<std::string, Node*> calculate_value(std::map
-                                             <std::string, Node*> node_map) {
-  for (auto map : node_map) {
-    double give_value = map.second->m_value / map.second->m_link_to.size();
-    for (auto& ref : map.second->m_link_to) {
-      node_map[ref]->m_new_value += give_value;
-    }
+SiteCollection calculate_value(SiteCollection sites) {
+  for (auto site : sites) {
+    site.second->passScoreToNeighbor();
   }
-  for (auto map : node_map) {
-    map.second->m_value = map.second->m_new_value;
-    map.second->m_new_value = 0;
+  for (auto site : sites) {
+    site.second->update();
   }
-  return node_map;
+  return sites;
 }
 
 int main(int argc, char *argv[]) {
@@ -55,12 +78,10 @@ int main(int argc, char *argv[]) {
     std::cerr << "error" << std::endl;
     return -1;
   }
-  std::map<std::string, Node*> node_map = set_data(ifs);
+  SiteCollection sites = set_data(ifs);
   for (int i = 0; i < 30; i++) {
-    node_map = calculate_value(node_map);  
+    sites = calculate_value(sites);  
   }
-  for (auto map : node_map) {
-    std::cout << map.first + " " << map.second->m_value << std::endl;
-  }
+  sites.begin()->second->printScore();
   return 0;
 }
