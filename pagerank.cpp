@@ -12,7 +12,7 @@ class SiteCollection {
 public:
   void addSite(std::string name);
   void caluculateScore();
-  static SiteCollection *createFromFile(std::ifstream &ifs);
+  static SiteCollection *createFromFile(char* filename);
   void printScores();
 private:
   std::map<std::string, Site*> m_sites;
@@ -62,10 +62,12 @@ void SiteCollection::caluculateScore() {
   }
 }
 
-SiteCollection* SiteCollection::createFromFile(
-  std::ifstream &ifs) {
+SiteCollection* SiteCollection::createFromFile(char* filename) {
   std::string line, key,link;
   SiteCollection* sites = new SiteCollection;
+  std::ifstream ifs(filename);
+  if (ifs.fail())
+    return nullptr;
   getline(ifs, line);
   int sites_num = std::stod(line, nullptr);
   for (int i = 0; i < sites_num; i++) {
@@ -92,12 +94,10 @@ int main(int argc, char *argv[]) {
   if (argc != 2) {
     std::cout << "illegal input.\n Example: ./a.out input_file" << std::endl;
   }
-  std::ifstream ifs(argv[1]);
-  if (ifs.fail()) {
-    std::cerr << "error" << std::endl;
+  
+  SiteCollection *sites = SiteCollection::createFromFile(argv[1]);
+  if (sites == nullptr)
     return -1;
-  }
-  SiteCollection *sites = SiteCollection::createFromFile(ifs);
   for (int i = 0; i < 30; i++) {
     sites->caluculateScore();  
   }
