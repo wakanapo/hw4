@@ -12,8 +12,7 @@ class SiteCollection {
 public:
   void addSite(std::string name);
   void caluculateScore();
-  Site* getSite(std::string key);
-  void makeSiteCollection(std::ifstream &ifs);
+  static SiteCollection *createFromFile(std::ifstream &ifs);
   void printScores();
 private:
   std::map<std::string, Site*> m_sites;
@@ -21,11 +20,10 @@ private:
 
 class Site {
 public:
-  Site(std::string name, SiteCollection* sites):
-    m_name(name), m_sites(sites) { };
+  Site(std::string name): m_name(name) { };
   
-  void storeSiteData(std::string link) {
-    m_link_to.push_back(m_sites->getSite(link));
+  void linkTo(Site *site) {
+    m_link_to.push_back(site);
   }
 
   void passScoreToNeighbor() {
@@ -49,11 +47,10 @@ private:
   double m_score = 100;
   double m_new_score = 0;
   std::vector<Site*> m_link_to;
-  SiteCollection* m_sites;
 };
 
 void SiteCollection::addSite(std::string name) {
-  m_sites[name] = new Site(name, this);
+  m_sites[name] = new Site(name);
 }
 
 void SiteCollection::caluculateScore() {
@@ -65,26 +62,24 @@ void SiteCollection::caluculateScore() {
   }
 }
 
-Site* SiteCollection::getSite(std::string key) {
-  return m_sites[key];
-}
-
-void SiteCollection::makeSiteCollection(
+SiteCollection* SiteCollection::createFromFile(
   std::ifstream &ifs) {
   std::string line, key,link;
+  SiteCollection* sites = new SiteCollection;
   getline(ifs, line);
   int sites_num = std::stod(line, nullptr);
   for (int i = 0; i < sites_num; i++) {
     getline(ifs, line);
-    addSite(line);
+    sites->addSite(line);
   }
   getline(ifs, line);
   int link_num = std::stod(line, nullptr);
   for (int i = 0; i < link_num; i++) {
     getline(ifs, key, ' ');
     getline(ifs, link);
-    m_sites[key]->storeSiteData(link);
+    sites->m_sites[key]->linkTo(sites->m_sites[link]);
   }
+  return sites;
 }
 
 void SiteCollection::printScores() {
@@ -102,11 +97,10 @@ int main(int argc, char *argv[]) {
     std::cerr << "error" << std::endl;
     return -1;
   }
-  SiteCollection sites;
-  sites.makeSiteCollection(ifs);
+  SiteCollection *sites = SiteCollection::createFromFile(ifs);
   for (int i = 0; i < 30; i++) {
-    sites.caluculateScore();  
+    sites->caluculateScore();  
   }
-  sites.printScores();
+  sites->printScores();
   return 0;
 }
