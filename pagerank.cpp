@@ -28,9 +28,8 @@ public:
 
   void passScoreToNeighbor() {
     double average = m_score / m_link_to.size();
-    for (auto site : m_link_to) {
+    for (auto site : m_link_to) 
       site->m_new_score += average;
-    }
   }
   
   void update() {
@@ -54,12 +53,10 @@ void SiteCollection::addSite(std::string name) {
 }
 
 void SiteCollection::caluculateScore() {
-  for (auto site : m_sites) {
+  for (auto site : m_sites) 
     site.second->passScoreToNeighbor();
-  }
-  for (auto site : m_sites) {
+  for (auto site : m_sites) 
     site.second->update();
-  }
 }
 
 SiteCollection* SiteCollection::createFromFile(std::string filename) {
@@ -85,22 +82,19 @@ SiteCollection* SiteCollection::createFromFile(std::string filename) {
 }
 
 void SiteCollection::printScores() {
-  for (auto site : m_sites) {
+  for (auto site : m_sites) 
     site.second->printScore();
-  }
 }
 
 int main(int argc, char *argv[]) {
-  if (argc != 2) {
+  if (argc != 2)
     std::cout << "illegal input.\n Example: ./a.out input_file" << std::endl;
-  }
   
   SiteCollection *sites = SiteCollection::createFromFile(argv[1]);
-  if (sites == nullptr)
+  if (!sites)
     return -1;
-  for (int i = 0; i < 30; i++) {
+  for (int i = 0; i < 30; i++) 
     sites->caluculateScore();  
-  }
   sites->printScores();
   return 0;
 }
