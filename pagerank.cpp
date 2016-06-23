@@ -63,7 +63,7 @@ void SiteCollection::caluculateScore() {
 }
 
 SiteCollection* SiteCollection::createFromFile(std::string filename) {
-  std::string line, key,link;
+  std::string line, key, link;
   SiteCollection* sites = new SiteCollection;
   std::ifstream ifs(filename);
   if (ifs.fail())
