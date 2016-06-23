@@ -12,7 +12,7 @@ class SiteCollection {
 public:
   void addSite(std::string name);
   void caluculateScore();
-  static SiteCollection *createFromFile(char* filename);
+  static SiteCollection *createFromFile(std::string filename);
   void printScores();
 private:
   std::map<std::string, Site*> m_sites;
@@ -62,7 +62,7 @@ void SiteCollection::caluculateScore() {
   }
 }
 
-SiteCollection* SiteCollection::createFromFile(char* filename) {
+SiteCollection* SiteCollection::createFromFile(std::string filename) {
   std::string line, key,link;
   SiteCollection* sites = new SiteCollection;
   std::ifstream ifs(filename);
