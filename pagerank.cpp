@@ -6,18 +6,6 @@
 #include <map>
 #include <vector>
 
-class Site;
-
-class SiteCollection {
-public:
-  void addSite(std::string name);
-  void caluculateScore();
-  static SiteCollection *createFromFile(std::string filename);
-  void printScores();
-private:
-  std::map<std::string, Site*> m_sites;
-};
-
 class Site {
 public:
   Site(std::string name): m_name(name) { };
@@ -48,43 +36,49 @@ private:
   std::vector<Site*> m_link_to;
 };
 
-void SiteCollection::addSite(std::string name) {
-  m_sites[name] = new Site(name);
-}
+class SiteCollection {
+public:
+  void addSite(std::string name) {
+    m_sites[name] = new Site(name);
+  }
 
-void SiteCollection::caluculateScore() {
-  for (auto site : m_sites) 
-    site.second->passScoreToNeighbor();
-  for (auto site : m_sites) 
-    site.second->update();
-}
+  void caluculateScore() {
+    for (auto site : m_sites) 
+      site.second->passScoreToNeighbor();
+    for (auto site : m_sites) 
+      site.second->update();
+  }
 
-SiteCollection* SiteCollection::createFromFile(std::string filename) {
-  std::string line, key, link;
-  SiteCollection* sites = new SiteCollection;
-  std::ifstream ifs(filename);
-  if (ifs.fail())
-    return nullptr;
-  getline(ifs, line);
-  int sites_num = std::stod(line, nullptr);
-  for (int i = 0; i < sites_num; i++) {
+  static SiteCollection* createFromFile(std::string filename) {
+    std::string line, key, link;
+    SiteCollection* sites = new SiteCollection;
+    std::ifstream ifs(filename);
+    if (ifs.fail())
+      return nullptr;
     getline(ifs, line);
-    sites->addSite(line);
+    int sites_num = std::stod(line, nullptr);
+    for (int i = 0; i < sites_num; i++) {
+      getline(ifs, line);
+      sites->addSite(line);
+    }
+    getline(ifs, line);
+    int link_num = std::stod(line, nullptr);
+    for (int i = 0; i < link_num; i++) {
+      getline(ifs, key, ' ');
+      getline(ifs, link);
+      sites->m_sites[key]->linkTo(sites->m_sites[link]);
+    }
+    return sites;
   }
-  getline(ifs, line);
-  int link_num = std::stod(line, nullptr);
-  for (int i = 0; i < link_num; i++) {
-    getline(ifs, key, ' ');
-    getline(ifs, link);
-    sites->m_sites[key]->linkTo(sites->m_sites[link]);
-  }
-  return sites;
-}
 
-void SiteCollection::printScores() {
-  for (auto site : m_sites) 
-    site.second->printScore();
-}
+  void printScores() {
+    for (auto site : m_sites) 
+      site.second->printScore();
+  }
+
+private:
+  std::map<std::string, Site*> m_sites;
+};
 
 int main(int argc, char *argv[]) {
   if (argc != 2)
