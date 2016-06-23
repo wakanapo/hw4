@@ -12,7 +12,7 @@ class SiteCollection {
 public:
   void addSite(std::string name);
   void caluculateScore();
-  Site* getNeighbor(std::string key);
+  Site* getSite(std::string key);
   void makeSiteCollection(std::ifstream &ifs);
   void printScores();
 private:
@@ -25,13 +25,13 @@ public:
     m_name(name), m_sites(sites) { };
   
   void storeSiteData(std::string link) {
-    m_link_to.push_back(link);
+    m_link_to.push_back(m_sites->getSite(link));
   }
 
   void passScoreToNeighbor() {
     double average = m_score / m_link_to.size();
-    for (auto &key : m_link_to) {
-    m_sites->getNeighbor(key)->m_new_score += average;
+    for (auto site : m_link_to) {
+      site->m_new_score += average;
     }
   }
   
@@ -48,7 +48,7 @@ private:
   std::string m_name;
   double m_score = 100;
   double m_new_score = 0;
-  std::vector<std::string> m_link_to;
+  std::vector<Site*> m_link_to;
   SiteCollection* m_sites;
 };
 
@@ -65,7 +65,7 @@ void SiteCollection::caluculateScore() {
   }
 }
 
-Site* SiteCollection::getNeighbor(std::string key) {
+Site* SiteCollection::getSite(std::string key) {
   return m_sites[key];
 }
 
